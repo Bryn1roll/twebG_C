@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace eTickets
 {
@@ -32,9 +33,13 @@ namespace eTickets
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Set the culture to Moldovan
+            var cultureInfo = new CultureInfo("ro-MD");
+            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
             //DbContext configuration
-             services.AddDbContext<AppDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("SqlConnectionString")));
+            services.AddDbContext<AppDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("SqlConnectionString")));
             //services.AddDbContext<AppDbContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnectionString")));
 
             //Services configuration
@@ -57,7 +62,6 @@ namespace eTickets
             });
 
             services.AddControllersWithViews();
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -81,8 +85,6 @@ namespace eTickets
 
             //Authentication & Authorization
             app.UseAuthentication();
-            app.UseAuthorization();
-
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
