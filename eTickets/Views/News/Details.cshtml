@@ -1,0 +1,26 @@
+@model eTickets.Models.News
+
+@{
+    ViewData["Title"] = "News Details";
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h1 class="card-title">@Model.Title</h1>
+                <p class="card-text text-muted">@Model.Date.ToString("dd MMM yyyy")</p>
+                <img src="@Model.ImageURL" class="img-fluid rounded" alt="@Model.Title">
+                <p class="card-text mt-3">@Model.Description</p>
+            </div>
+            <div class="card-footer">
+                <a class="btn btn-outline-primary" asp-action="Index">Back to List</a>
+                @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                {
+                    <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+                    <a class="btn btn-danger text-white" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+                }
+            </div>
+        </div>
+    </div>
+</div> 
