@@ -2,6 +2,7 @@
 using eTickets.Data.Static;
 using eTickets.Data.ViewModels;
 using eTickets.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,13 +26,111 @@ namespace eTickets.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Users()
+        {
+            var users = await _userManager.Users.ToListAsync();
+            return View(users);
+        }
 
-        //public async Task<IActionResult> Users()
-        //{
-        //    var users = await _context.Users.ToListAsync();
-        //    return View(users);
-        //}
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Details(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return View("NotFound");
+            }
 
+            var userRoles = await _userManager.GetRolesAsync(user);
+            ViewBag.Roles = userRoles;
+            return View(user);
+        }
+
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Edit(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return View("NotFound");
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            ViewBag.Roles = userRoles;
+            return View(user);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Edit(string id, ApplicationUser user)
+        {
+            if (id != user.Id)
+            {
+                return View("NotFound");
+            }
+
+            if (ModelState.IsValid)
+            {
+                var existingUser = await _userManager.FindByIdAsync(id);
+                if (existingUser == null)
+                {
+                    return View("NotFound");
+                }
+
+                existingUser.FullName = user.FullName;
+                existingUser.Email = user.Email;
+                existingUser.UserName = user.UserName;
+
+                var result = await _userManager.UpdateAsync(existingUser);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction(nameof(Users));
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+            }
+            return View(user);
+        }
+
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return View("NotFound");
+            }
+
+            return View(user);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> DeleteConfirmed(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return View("NotFound");
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(Users));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+
+            return View(user);
+        }
 
         public IActionResult Login() => View(new LoginVM());
 

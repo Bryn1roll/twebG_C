@@ -49,6 +49,7 @@
                     <td><b>Total:</b></td>
                     <td>
                         @Model.ShoppingCartTotal.ToString("c")
+                        <small class="text-muted">(@Model.ShoppingCartTotal)</small>
                     </td>
                     <td></td>
                 </tr>
@@ -76,14 +77,23 @@
     <script src="https://www.paypalobjects.com/api/checkout.js"></script>
 
     <script>
-
         let _total = @Html.Raw(Model.ShoppingCartTotal);
+        const MDL_TO_USD_RATE = 17.5;
+        
+        // Convert MDL to USD
+        function convertToUSD(mdlAmount) {
+            return (mdlAmount / MDL_TO_USD_RATE).toFixed(2);
+        }
+
+        // Debug information
+        console.log('Initial total in MDL:', _total);
+        console.log('Converted total in USD:', convertToUSD(_total));
 
         paypal.Button.render({
             //Configure environment
             env: 'sandbox',
             client: {
-                sandbox: 'AcKRtgL4i68EZ2ZYuYUx3ilihAg2YhL5dtF_m19A8MjBWVOn6ewNS4M_uV8gA3xi98zTcUq38gUHbVFx'
+                sandbox: 'AR_5NyAUvEmQi0LLCJj6tgkHuAwyPKx4hy-o2bPMB1WRqv4E9mTscch-VFxWn7JwGRWLqMYsk0sN-lV2'
             },
 
             //Customize button
@@ -97,10 +107,19 @@
 
             //Set up a payment
             payment: function (data, actions) {
+                const usdAmount = convertToUSD(_total);
+                console.log('Payment - Original amount in MDL:', _total);
+                console.log('Payment - Converted amount in USD:', usdAmount);
+                
+                if (usdAmount <= 0) {
+                    console.error('Invalid amount:', usdAmount);
+                    return Promise.reject('Invalid amount');
+                }
+
                 return actions.payment.create({
                     transactions: [{
                         amount: {
-                            total: _total,
+                            total: usdAmount,
                             currency: 'USD'
                         }
                     }]
@@ -113,6 +132,16 @@
                     var url = '@Url.Action("CompleteOrder", "Orders", new { })';
                     window.location.href = url;
                 });
+            },
+
+            // Add error handling
+            onError: function (err) {
+                console.error('PayPal Error:', err);
+            },
+
+            // Add cancel handling
+            onCancel: function (data) {
+                console.log('Payment cancelled');
             }
 
         }, '#paypal-btn')
