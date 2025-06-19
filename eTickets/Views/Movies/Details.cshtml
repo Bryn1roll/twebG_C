@@ -95,14 +95,34 @@
                 <h4>Комментарии</h4>
             </div>
             <div class="card-body">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <form asp-action="AddComment" method="post" class="mb-3">
+                        <div class="form-group">
+                            <textarea name="Content" class="form-control" placeholder="Оставьте комментарий..." required></textarea>
+                            <input type="hidden" name="MovieId" value="@Model.Id" />
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-2">Добавить комментарий</button>
+                    </form>
+                }
                 @if (Model.Comments != null && Model.Comments.Any())
                 {
                     <ul class="list-group">
                         @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
                         {
-                            <li class="list-group-item">
-                                <b>@(ViewBag.UserNames != null && ViewBag.UserNames.ContainsKey(comment.UserId) ? ViewBag.UserNames[comment.UserId] : comment.UserId)</b> <span class="text-muted">@comment.CreatedAt.ToString("g")</span><br />
-                                @comment.Content
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <b>@(ViewBag.UserNames != null && ViewBag.UserNames.ContainsKey(comment.UserId) ? ViewBag.UserNames[comment.UserId] : comment.UserId)</b> <span class="text-muted">@comment.CreatedAt.ToString("g")</span><br />
+                                    @comment.Content
+                                </div>
+                                @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                                {
+                                    <form asp-action="DeleteComment" method="post" style="display:inline;">
+                                        <input type="hidden" name="commentId" value="@comment.Id" />
+                                        <input type="hidden" name="movieId" value="@Model.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger ms-2">Удалить</button>
+                                    </form>
+                                }
                             </li>
                         }
                     </ul>

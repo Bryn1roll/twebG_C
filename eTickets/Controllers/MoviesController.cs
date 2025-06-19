@@ -11,10 +11,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using eTickets.Data.ViewModels;
 
 namespace eTickets.Controllers
 {
-    [Authorize(Roles = UserRoles.Admin)]
     public class MoviesController : Controller
     {
         private readonly IMoviesService _service;
@@ -147,6 +147,41 @@ namespace eTickets.Controllers
 
             await _service.UpdateMovieAsync(movie);
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AddComment(AddCommentVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("Details", new { id = model.MovieId });
+            }
+
+            var userId = _userManager.GetUserId(User);
+            var comment = new Comment
+            {
+                Content = model.Content,
+                MovieId = model.MovieId,
+                UserId = userId,
+                CreatedAt = DateTime.Now
+            };
+            _context.Comments.Add(comment);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", new { id = model.MovieId });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> DeleteComment(int commentId, int movieId)
+        {
+            var comment = await _context.Comments.FindAsync(commentId);
+            if (comment != null)
+            {
+                _context.Comments.Remove(comment);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("Details", new { id = movieId });
         }
     }
 }

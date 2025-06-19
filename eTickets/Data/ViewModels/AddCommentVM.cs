@@ -7,5 +7,6 @@ namespace eTickets.Data.ViewModels
         [Required]
         public string Content { get; set; }
         public int NewsId { get; set; }
+        public int? MovieId { get; set; }
     }
 } 
