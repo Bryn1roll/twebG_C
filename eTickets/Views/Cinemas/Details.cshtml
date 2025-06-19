@@ -30,7 +30,7 @@
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group actor-movies-list">
                         @if (Model.Movies != null && Model.Movies.Any())
                         {
                             <h3>Фильмы, которые идут в этом кинотеатре:</h3>
@@ -38,7 +38,8 @@
                                 @foreach (var movie in Model.Movies)
                                 {
                                     <li>
-                                        <a asp-controller="Movies" asp-action="Details" asp-route-id="@movie.Id">
+                                        <img src="@movie.ImageURL" alt="@movie.Name" class="movie-thumb" />
+                                        <a asp-controller="Movies" asp-action="Details" asp-route-id="@movie.Id" class="movie-title">
                                             @movie.Name
                                         </a>
                                     </li>
