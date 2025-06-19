@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using eTickets.Data;
 using System.Linq;
+using eTickets.Data.ViewModels;
+using System;
 
 namespace eTickets.Controllers
 {
@@ -95,6 +97,41 @@ namespace eTickets.Controllers
 
             await _service.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AddComment(AddCommentVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("Details", new { id = model.NewsId });
+            }
+
+            var userId = _userManager.GetUserId(User);
+            var comment = new Comment
+            {
+                Content = model.Content,
+                NewsId = model.NewsId,
+                UserId = userId,
+                CreatedAt = DateTime.Now
+            };
+            _context.Comments.Add(comment);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", new { id = model.NewsId });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> DeleteComment(int commentId, int newsId)
+        {
+            var comment = await _context.Comments.FindAsync(commentId);
+            if (comment != null)
+            {
+                _context.Comments.Remove(comment);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("Details", new { id = newsId });
         }
     }
 } 
