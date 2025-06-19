@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace eTickets.Controllers
 {
@@ -15,10 +16,12 @@ namespace eTickets.Controllers
     public class ActorsController : Controller
     {
         private readonly IActorsService _service;
+        private readonly AppDbContext _context;
 
-        public ActorsController(IActorsService service)
+        public ActorsController(IActorsService service, AppDbContext context)
         {
             _service = service;
+            _context = context;
         }
 
         [AllowAnonymous]
@@ -49,7 +52,10 @@ namespace eTickets.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
-            var actorDetails = await _service.GetByIdAsync(id);
+            var actorDetails = await _context.Actors
+                .Include(a => a.Actors_Movies)
+                    .ThenInclude(am => am.Movie)
+                .FirstOrDefaultAsync(a => a.Id == id);
 
             if (actorDetails == null) return View("NotFound");
             return View(actorDetails);

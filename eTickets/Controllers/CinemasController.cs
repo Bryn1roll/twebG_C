@@ -48,7 +48,7 @@ namespace eTickets.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
-            var cinemaDetails = await _service.GetByIdAsync(id);
+            var cinemaDetails = await _service.GetByIdAsync(id, c => c.Movies);
             if (cinemaDetails == null) return View("NotFound");
             return View(cinemaDetails);
         }

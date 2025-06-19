@@ -33,7 +33,7 @@ namespace eTickets.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
-            var producerDetails = await _service.GetByIdAsync(id);
+            var producerDetails = await _service.GetByIdAsync(id, p => p.Movies);
             if (producerDetails == null) return View("NotFound");
             return View(producerDetails);
         }
