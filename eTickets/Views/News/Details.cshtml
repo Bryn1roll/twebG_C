@@ -23,4 +23,33 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Комментарии -->
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card mt-3">
+            <div class="card-header">
+                <h4>Комментарии</h4>
+            </div>
+            <div class="card-body">
+                @if (Model.Comments != null && Model.Comments.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+                        {
+                            <li class="list-group-item">
+                                <b>@(ViewBag.UserNames != null && ViewBag.UserNames.ContainsKey(comment.UserId) ? ViewBag.UserNames[comment.UserId] : comment.UserId)</b> <span class="text-muted">@comment.CreatedAt.ToString("g")</span><br />
+                                @comment.Content
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>Комментариев пока нет.</p>
+                }
+            </div>
+        </div>
+    </div>
 </div> 

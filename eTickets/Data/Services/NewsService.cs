@@ -24,7 +24,9 @@ namespace eTickets.Data.Services
 
         public async Task<News> GetByIdAsync(int id)
         {
-            var result = await _context.News.FirstOrDefaultAsync(n => n.Id == id);
+            var result = await _context.News
+                .Include(n => n.Comments)
+                .FirstOrDefaultAsync(n => n.Id == id);
             return result;
         }
 
@@ -43,8 +45,14 @@ namespace eTickets.Data.Services
 
         public async Task DeleteAsync(int id)
         {
+            // Удаляем связанные комментарии
+            var comments = _context.Comments.Where(c => c.NewsId == id);
+            _context.Comments.RemoveRange(comments);
+
+            // Удаляем новость
             var result = await _context.News.FirstOrDefaultAsync(n => n.Id == id);
             _context.News.Remove(result);
+
             await _context.SaveChangesAsync();
         }
     }

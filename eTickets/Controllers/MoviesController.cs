@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace eTickets.Controllers
 {
@@ -17,10 +18,14 @@ namespace eTickets.Controllers
     public class MoviesController : Controller
     {
         private readonly IMoviesService _service;
+        private readonly AppDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public MoviesController(IMoviesService service)
+        public MoviesController(IMoviesService service, AppDbContext context, UserManager<ApplicationUser> userManager)
         {
             _service = service;
+            _context = context;
+            _userManager = userManager;
         }
 
         [AllowAnonymous]
@@ -52,6 +57,15 @@ namespace eTickets.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var movieDetail = await _service.GetMovieByIdAsync(id);
+            if (movieDetail == null) return View("NotFound");
+
+            // Получаем Id всех пользователей из комментариев
+            var userIds = movieDetail.Comments?.Select(c => c.UserId).Distinct().ToList() ?? new List<string>();
+            var users = await _context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => u.FullName);
+            ViewBag.UserNames = users;
+
             return View(movieDetail);
         }
 

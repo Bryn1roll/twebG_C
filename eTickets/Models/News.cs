@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace eTickets.Models
 {
@@ -23,5 +24,7 @@ namespace eTickets.Models
         [Display(Name = "Date")]
         [Required(ErrorMessage = "Date is required")]
         public DateTime Date { get; set; }
+
+        public List<Comment> Comments { get; set; }
     }
 } 

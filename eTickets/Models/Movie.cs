@@ -24,6 +24,7 @@ namespace eTickets.Models
 
         //Relationships
         public List<Actor_Movie> Actors_Movies { get; set; }
+        public List<Comment> Comments { get; set; }
 
         //Cinema
         public int CinemaId { get; set; }
