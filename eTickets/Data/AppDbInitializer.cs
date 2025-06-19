@@ -335,6 +335,9 @@ namespace eTickets.Data
                 if (!await roleManager.RoleExistsAsync(UserRoles.User))
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
 
+                if (!await roleManager.RoleExistsAsync(UserRoles.Moderator))
+                    await roleManager.CreateAsync(new IdentityRole(UserRoles.Moderator));
+
                 //Users
                 var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                 string adminUserEmail = "admin@etickets.com";

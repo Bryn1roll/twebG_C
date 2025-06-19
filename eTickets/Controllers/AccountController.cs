@@ -58,12 +58,13 @@ namespace eTickets.Controllers
 
             var userRoles = await _userManager.GetRolesAsync(user);
             ViewBag.Roles = userRoles;
+            ViewBag.AllRoles = new List<string> { UserRoles.User, UserRoles.Moderator, UserRoles.Admin };
             return View(user);
         }
 
         [HttpPost]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> Edit(string id, ApplicationUser user)
+        public async Task<IActionResult> Edit(string id, ApplicationUser user, string selectedRole)
         {
             if (id != user.Id)
             {
@@ -85,6 +86,13 @@ namespace eTickets.Controllers
                 var result = await _userManager.UpdateAsync(existingUser);
                 if (result.Succeeded)
                 {
+                    // Смена роли
+                    var currentRoles = await _userManager.GetRolesAsync(existingUser);
+                    if (!string.IsNullOrEmpty(selectedRole) && !currentRoles.Contains(selectedRole))
+                    {
+                        await _userManager.RemoveFromRolesAsync(existingUser, currentRoles);
+                        await _userManager.AddToRoleAsync(existingUser, selectedRole);
+                    }
                     return RedirectToAction(nameof(Users));
                 }
 
@@ -93,6 +101,7 @@ namespace eTickets.Controllers
                     ModelState.AddModelError("", error.Description);
                 }
             }
+            ViewBag.AllRoles = new List<string> { UserRoles.User, UserRoles.Moderator, UserRoles.Admin };
             return View(user);
         }
 
@@ -104,7 +113,8 @@ namespace eTickets.Controllers
             {
                 return View("NotFound");
             }
-
+            var userRoles = await _userManager.GetRolesAsync(user);
+            ViewBag.Roles = userRoles;
             return View(user);
         }
 
@@ -198,6 +208,34 @@ namespace eTickets.Controllers
         public IActionResult AccessDenied(string ReturnUrl)
         {
             return View();
+        }
+
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> SetModerator(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return View("NotFound");
+            }
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            await _userManager.AddToRoleAsync(user, UserRoles.Moderator);
+            return RedirectToAction(nameof(Users));
+        }
+
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> SetUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return View("NotFound");
+            }
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            await _userManager.AddToRoleAsync(user, UserRoles.User);
+            return RedirectToAction(nameof(Users));
         }
 
     }
